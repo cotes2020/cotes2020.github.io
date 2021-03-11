@@ -1,0 +1,265 @@
+<!DOCTYPE html><html lang="zh-CN" ><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><meta name="pv-cache-enabled" content="true"><meta name="pv-proxy-endpoint" content="https://cotes-blog.appspot.com/query?id=agxifmNvdGVzLWJsb2dyFQsSCEFwaVF1ZXJ5GICAgMCX0pEKDA"><meta name="pv-cache-data" content="/assets/js/data/pageviews.json"><meta name="generator" content="Jekyll v4.2.0" /><meta property="og:title" content="Jekyll 集成 Travis CI" /><meta name="author" content="Cotes Chung" /><meta property="og:locale" content="zh_CN" /><meta name="description" content="前段时间，因为本地 git push -f 覆盖远端 master 分支，导致博客在 GitHub Pages 上编译失败。查看 GitHub Help 的文档 “Viewing Jekyll build error messages”，文中提及可以通过第三方平台执行 build，直接观察错误信息细节，这才开始认识了本文主角：Travis CI。" /><meta property="og:description" content="前段时间，因为本地 git push -f 覆盖远端 master 分支，导致博客在 GitHub Pages 上编译失败。查看 GitHub Help 的文档 “Viewing Jekyll build error messages”，文中提及可以通过第三方平台执行 build，直接观察错误信息细节，这才开始认识了本文主角：Travis CI。" /><link rel="canonical" href="https://blog.cotes.info/posts/integrate-travis-ci-in-jekyll/" /><meta property="og:url" content="https://blog.cotes.info/posts/integrate-travis-ci-in-jekyll/" /><meta property="og:site_name" content="Cotes’ Blog" /><meta property="og:type" content="article" /><meta property="article:published_time" content="2018-11-08T22:17:00+08:00" /><meta name="twitter:card" content="summary" /><meta property="twitter:title" content="Jekyll 集成 Travis CI" /><meta name="twitter:site" content="@cotes2020" /><meta name="twitter:creator" content="@Cotes Chung" /><meta name="google-site-verification" content="c4U37RnCWfX1i8N8Z3OFcvHagPoZc6Op02myRTJ8WOU" /> <script type="application/ld+json"> {"author":{"@type":"Person","name":"Cotes Chung"},"description":"前段时间，因为本地 git push -f 覆盖远端 master 分支，导致博客在 GitHub Pages 上编译失败。查看 GitHub Help 的文档 “Viewing Jekyll build error messages”，文中提及可以通过第三方平台执行 build，直接观察错误信息细节，这才开始认识了本文主角：Travis CI。","url":"https://blog.cotes.info/posts/integrate-travis-ci-in-jekyll/","mainEntityOfPage":{"@type":"WebPage","@id":"https://blog.cotes.info/posts/integrate-travis-ci-in-jekyll/"},"@type":"BlogPosting","headline":"Jekyll 集成 Travis CI","dateModified":"2018-11-08T22:17:00+08:00","datePublished":"2018-11-08T22:17:00+08:00","@context":"https://schema.org"}</script><title>Jekyll 集成 Travis CI | Cotes' Blog</title><link rel="shortcut icon" href="/assets/img/favicons/favicon.ico" type="image/x-icon"><link rel="icon" href="/assets/img/favicons/favicon.ico" type="image/x-icon"><link rel="apple-touch-icon" href="/assets/img/favicons/apple-icon.png"><link rel="apple-touch-icon" href="/assets/img/favicons/apple-icon-precomposed.png"><link rel="apple-touch-icon" sizes="57x57" href="/assets/img/favicons/apple-icon-57x57.png"><link rel="apple-touch-icon" sizes="60x60" href="/assets/img/favicons/apple-icon-60x60.png"><link rel="apple-touch-icon" sizes="72x72" href="/assets/img/favicons/apple-icon-72x72.png"><link rel="apple-touch-icon" sizes="76x76" href="/assets/img/favicons/apple-icon-76x76.png"><link rel="apple-touch-icon" sizes="114x114" href="/assets/img/favicons/apple-icon-114x114.png"><link rel="apple-touch-icon" sizes="120x120" href="/assets/img/favicons/apple-icon-120x120.png"><link rel="apple-touch-icon" sizes="144x144" href="/assets/img/favicons/apple-icon-144x144.png"><link rel="apple-touch-icon" sizes="152x152" href="/assets/img/favicons/apple-icon-152x152.png"><link rel="apple-touch-icon" sizes="180x180" href="/assets/img/favicons/apple-icon-180x180.png"><link rel="icon" type="image/png" sizes="192x192" href="/assets/img/favicons/android-icon-192x192.png"><link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicons/favicon-32x32.png"><link rel="icon" type="image/png" sizes="96x96" href="/assets/img/favicons/favicon-96x96.png"><link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicons/favicon-16x16.png"><link rel="manifest" href="/assets/img/favicons/manifest.json"><meta name='msapplication-config' content='/assets/img/favicons/browserconfig.xml'><meta name="msapplication-TileColor" content="#ffffff"><meta name="msapplication-TileImage" content="/assets/img/favicons/ms-icon-144x144.png"><meta name="theme-color" content="#ffffff"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous"><link rel="dns-prefetch" href="https://fonts.gstatic.com"><link rel="preconnect" href="https://www.google-analytics.com" crossorigin="use-credentials"><link rel="dns-prefetch" href="https://www.google-analytics.com"><link rel="preconnect" href="https://www.googletagmanager.com" crossorigin="anonymous"><link rel="dns-prefetch" href="https://www.googletagmanager.com"><link rel="preconnect" href="https://cotes-blog.appspot.com" crossorigin="use-credentials"><link rel="dns-prefetch" href="https://cotes-blog.appspot.com"><link rel="preconnect" href="cdn.jsdelivr.net"><link rel="dns-prefetch" href="cdn.jsdelivr.net"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha256-LA89z+k9fjgMKQ/kq4OO2Mrf8VltYml/VES+Rg0fh20=" crossorigin="anonymous"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.11.2/css/all.min.css" integrity="sha256-+N4/V/SbAFiW1MPBCXnfnP9QSN3+Keu+NlB+0ev/YKQ=" crossorigin="anonymous"><link rel="stylesheet" href="/assets/css/style.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@1.0.1/dist/bootstrap-toc.min.css"> <script src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script> <script defer src="https://cdn.jsdelivr.net/combine/npm/popper.js@1.15.0,npm/bootstrap@4/dist/js/bootstrap.min.js"></script> <script async src="https://cdn.jsdelivr.net/npm/countup.js@1.9.3/dist/countUp.min.js"></script> <script async src="/assets/js/dist/pvreport.min.js"></script> <script defer src="/assets/js/dist/post.min.js"></script> <script defer src="/app.js"></script> <script defer src="https://www.googletagmanager.com/gtag/js?id=UA-112933759-1"></script> <script> document.addEventListener("DOMContentLoaded", function(event) { window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', 'UA-112933759-1'); }); </script><body data-spy="scroll" data-target="#toc"><div id="sidebar" class="d-flex flex-column align-items-end"><div class="profile-wrapper text-center"><div id="avatar"> <a href="/" alt="avatar" class="mx-auto"> <img src="https://cdn.jsdelivr.net/gh/cotes2020/blog-images/commons/avatar.jpeg" alt="avatar" onerror="this.style.display='none'"> </a></div><div class="site-title mt-3"> <a href="/">Cotes' Blog</a></div><div class="site-subtitle font-italic">Record ideas about tech and life</div></div><ul class="w-100"><li class="nav-item"> <a href="/" class="nav-link"> <i class="fa-fw fas fa-home ml-xl-3 mr-xl-3 unloaded"></i> <span>HOME</span> </a><li class="nav-item"> <a href="/categories/" class="nav-link"> <i class="fa-fw fas fa-stream ml-xl-3 mr-xl-3 unloaded"></i> <span>CATEGORIES</span> </a><li class="nav-item"> <a href="/tags/" class="nav-link"> <i class="fa-fw fas fa-tags ml-xl-3 mr-xl-3 unloaded"></i> <span>TAGS</span> </a><li class="nav-item"> <a href="/archives/" class="nav-link"> <i class="fa-fw fas fa-archive ml-xl-3 mr-xl-3 unloaded"></i> <span>ARCHIVES</span> </a><li class="nav-item"> <a href="/about/" class="nav-link"> <i class="fa-fw fas fa-info ml-xl-3 mr-xl-3 unloaded"></i> <span>ABOUT</span> </a></ul><div class="sidebar-bottom mt-auto d-flex flex-wrap justify-content-center"> <a href="https://github.com/cotes2020" aria-label="github" class="order-3" target="_blank" rel="noopener"> <i class="fab fa-github-alt"></i> </a> <a href="https://twitter.com/cotes2020" aria-label="twitter" class="order-4" target="_blank" rel="noopener"> <i class="fab fa-twitter"></i> </a> <a href=" javascript:location.href = 'mailto:' + ['cotes.chung','gmail.com'].join('@')" aria-label="email" class="order-5" > <i class="fas fa-envelope"></i> </a> <a href="/feed.xml" aria-label="rss" class="order-6" > <i class="fas fa-rss"></i> </a> <span class="icon-border order-2"></span> <span id="mode-toggle-wrapper" class="order-1"> <i class="mode-toggle fas fa-adjust"></i> <script type="text/javascript"> class ModeToggle { static get MODE_KEY() { return "mode"; } static get DARK_MODE() { return "dark"; } static get LIGHT_MODE() { return "light"; } constructor() { if (this.hasMode) { if (this.isDarkMode) { if (!this.isSysDarkPrefer) { this.setDark(); } } else { if (this.isSysDarkPrefer) { this.setLight(); } } } var self = this; /* always follow the system prefers */ this.sysDarkPrefers.addListener(function() { if (self.hasMode) { if (self.isDarkMode) { if (!self.isSysDarkPrefer) { self.setDark(); } } else { if (self.isSysDarkPrefer) { self.setLight(); } } self.clearMode(); } self.updateMermaid(); }); } /* constructor() */ setDark() { $('html').attr(ModeToggle.MODE_KEY, ModeToggle.DARK_MODE); sessionStorage.setItem(ModeToggle.MODE_KEY, ModeToggle.DARK_MODE); } setLight() { $('html').attr(ModeToggle.MODE_KEY, ModeToggle.LIGHT_MODE); sessionStorage.setItem(ModeToggle.MODE_KEY, ModeToggle.LIGHT_MODE); } clearMode() { $('html').removeAttr(ModeToggle.MODE_KEY); sessionStorage.removeItem(ModeToggle.MODE_KEY); } get sysDarkPrefers() { return window.matchMedia("(prefers-color-scheme: dark)"); } get isSysDarkPrefer() { return this.sysDarkPrefers.matches; } get isDarkMode() { return this.mode == ModeToggle.DARK_MODE; } get isLightMode() { return this.mode == ModeToggle.LIGHT_MODE; } get hasMode() { return this.mode != null; } get mode() { return sessionStorage.getItem(ModeToggle.MODE_KEY); } /* get the current mode on screen */ get modeStatus() { if (this.isDarkMode || (!this.hasMode && this.isSysDarkPrefer) ) { return ModeToggle.DARK_MODE; } else { return ModeToggle.LIGHT_MODE; } } updateMermaid() { if (typeof mermaid !== "undefined") { let expectedTheme = (this.modeStatus === ModeToggle.DARK_MODE? "dark" : "default"); let config = { theme: expectedTheme }; /* re-render the SVG › <https://github.com/mermaid-js/mermaid/issues/311#issuecomment-332557344> */ $(".mermaid").each(function() { let svgCode = $(this).prev().children().html(); $(this).removeAttr("data-processed"); $(this).html(svgCode); }); mermaid.initialize(config); mermaid.init(undefined, ".mermaid"); } } flipMode() { if (this.hasMode) { if (this.isSysDarkPrefer) { if (this.isLightMode) { this.clearMode(); } else { this.setLight(); } } else { if (this.isDarkMode) { this.clearMode(); } else { this.setDark(); } } } else { if (this.isSysDarkPrefer) { this.setLight(); } else { this.setDark(); } } this.updateMermaid(); } /* flipMode() */ } /* ModeToggle */ let toggle = new ModeToggle(); $(".mode-toggle").click(function() { toggle.flipMode(); }); </script> </span></div></div><div id="topbar-wrapper" class="row justify-content-center topbar-down"><div id="topbar" class="col-11 d-flex h-100 align-items-center justify-content-between"> <span id="breadcrumb"> <span> <a href="/"> Posts </a> </span> <span>Jekyll 集成 Travis CI</span> </span> <i id="sidebar-trigger" class="fas fa-bars fa-fw"></i><div id="topbar-title"> Post</div><i id="search-trigger" class="fas fa-search fa-fw"></i> <span id="search-wrapper" class="align-items-center"> <i class="fas fa-search fa-fw"></i> <input class="form-control" id="search-input" type="search" aria-label="search" placeholder="Search..."> <i class="fa fa-times-circle fa-fw" id="search-cleaner"></i> </span> <span id="search-cancel" >Cancel</span></div></div><div id="main-wrapper"><div id="main"><div class="row"><div id="post-wrapper" class="col-12 col-lg-11 col-xl-8"><div class="post pl-1 pr-1 pl-sm-2 pr-sm-2 pl-md-4 pr-md-4"><h1 data-toc-skip>Jekyll 集成 Travis CI</h1><div class="post-meta text-muted d-flex flex-column"><div> <span class="semi-bold"> Cotes Chung </span> <span class="timeago " data-toggle="tooltip" data-placement="bottom" title="Thu, Nov 8, 2018, 10:17 PM +0800" prep="on" > Nov 8, 2018 <i class="unloaded">2018-11-08T22:17:00+08:00</i> </span></div><div> <span class="readtime" data-toggle="tooltip" data-placement="bottom" title="2918 words">16 min</span> <span id="pv" class="pageviews"><i class="fas fa-spinner fa-spin fa-fw"></i></span></div></div><div class="post-content"><p>前段时间，因为本地 <code class="language-plaintext highlighter-rouge">git push -f</code> 覆盖远端 master 分支，导致博客在 GitHub Pages 上编译失败。查看 GitHub Help 的文档 <a href="https://help.github.com/articles/viewing-jekyll-build-error-messages/"><em>“Viewing Jekyll build error messages”</em></a>，文中提及可以通过第三方平台执行 build，直接观察错误信息细节，这才开始认识了本文主角：<a href="https://travis-ci.org"><strong>Travis CI</strong></a>。</p><p>Travis CI 是个提供持续集成的服务平台，对 GitHub 开源项目免费，它可以自定义配置编译、测试到发布全套流程。如果只用来观察编译的日志，实在太浪费了。</p><p>在此之前，本站项目推送到 GitHub 之前，都会先干两件事：</p><ol><li>检查每篇文章的最后更新时间<li>生成所有 Category 和 Tag 的独立页面</ol><p>第一点「文章更新时间」可以用第三方 Jekyll 插件实现。直接推送 Jekyll 项目源码到仓库根目录，是由 GitHub Pages 执行构建，但它启用了 <code class="language-plaintext highlighter-rouge">--safe</code> 选项，第三方的 Jekyll Plugins 是不允许运行的，所以笔者写了 Python 脚本去完成这两个初始化工作，每次写完文章执行 commit 之后，本地运行一下初始化脚本，然后 push 到远端。初始化脚本会对本地硬盘进行 I/O 操作，理论上会损耗硬件寿命：Mac 价格逐年创新，必须加倍疼爱手上的机器。现在看来，将这两任项务交给 Travis CI，那是再合适不过了。</p><blockquote><p><strong>注</strong>：Travis CI 只对 GitHub 上的项目提供 CI 服务，其他代码托管平台只能移步。</p></blockquote><p>经过进一步的考究，<strong>GitHub Pages 支持静态文件托管</strong>，因此可以把站点构建生成的静态站点文件（<code class="language-plaintext highlighter-rouge">_site</code> 的内容）放到一个空白仓库中，由它开启 Pages 服务即可。站点构建托付给 Travis CI，绕开 GitHub Pages，这意味着可以任意使用第三方 Jekyll Plugins。</p><p>最后，项目源码和发布的静态资源分成两个仓库管理，最初的代码库仓库 <code class="language-plaintext highlighter-rouge">USER.github.io</code> 可以不受约束改成自己喜欢的名字，而且代码库的 <code class="language-plaintext highlighter-rouge">master</code> 分支也解放出来了（ GitHub Pages 强制占用 <a href="https://help.github.com/en/articles/user-organization-and-project-pages#user-and-organization-pages-sites">User and Organization Pages sites</a> 的 <code class="language-plaintext highlighter-rouge">master</code> 分支）。</p><p>所以改造工程将包含：</p><ul><li>项目源码和项目部署分仓<li>源码仓库集成 Travis CI<li>GitHub 授权<li>Travis CI 开启服务</ul><h2 id="github-分仓">GitHub 分仓</h2><p><strong>Step 1</strong>. 在 GitHub 上把 <code class="language-plaintext highlighter-rouge">USER.github.io</code> 仓库重命名为 <code class="language-plaintext highlighter-rouge">USER-blog</code>，用于存放源码。</p><p><strong>Step 2</strong>. 本地 Git 配置要做更改:</p><div class="language-console highlighter-rouge"><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+</pre><td class="rouge-code"><pre><span class="gp">$</span><span class="w"> </span><span class="nb">cd</span> /path/to/repository
+<span class="gp">$</span><span class="w"> </span>git remote set-url origin git@github.com:USER/USER-blog.git
+<span class="gp">$</span><span class="w"> </span>git remote set-url <span class="nt">--push</span> origin git@github.com:USER/USER-blog.git
+</pre></table></code></div></div><p>上述命令把本地 git 的 <code class="language-plaintext highlighter-rouge">fetch</code> 和 <code class="language-plaintext highlighter-rouge">push</code> 远程地址修改为新库地址，<code class="language-plaintext highlighter-rouge">USER</code> 为 GitHub 用户名。</p><p><strong>Step 3</strong>. GitHub 新建仓库 <code class="language-plaintext highlighter-rouge">USER.github.io</code>，没有错，替代 <strong>Step 1</strong> 的旧仓库名称，用于存放构建输出的静态文件。切记为这个仓库开启 Pages 服务。</p><p>下面详细介绍源码仓库 <code class="language-plaintext highlighter-rouge">USER-blog</code> 接入 Travis CI 的步骤。</p><h2 id="jekyll-配置">Jekyll 配置</h2><h3 id="gemfile">Gemfile</h3><p>因为在 CI 中会用 <code class="language-plaintext highlighter-rouge">Bundler</code> 编译项目，所以要确保项目根目录包含一个 <code class="language-plaintext highlighter-rouge">Gemfile</code> 文件, 没有则新建，首行内容如下：</p><div class="language-ruby highlighter-rouge"><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+</pre><td class="rouge-code"><pre><span class="n">source</span> <span class="s2">"https://rubygems.org"</span>
+</pre></table></code></div></div><p>项目中依赖的 Jekyll Plugins，在 <code class="language-plaintext highlighter-rouge">Gemfile</code> 中添加依赖声明:</p><div class="language-ruby highlighter-rouge"><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+</pre><td class="rouge-code"><pre><span class="n">group</span> <span class="ss">:jekyll_plugins</span> <span class="k">do</span>
+  <span class="n">gem</span> <span class="s2">"plugin-a"</span>
+  <span class="n">gem</span> <span class="s2">"plugin-b"</span>
+  <span class="c1"># ...</span>
+<span class="k">end</span>
+</pre></table></code></div></div><blockquote><p><strong>注</strong>: 如果插件没有声明在 <code class="language-plaintext highlighter-rouge">:jekyll_plugins</code> 分组内，则需要在 <code class="language-plaintext highlighter-rouge">_config.yml</code> 的 <code class="language-plaintext highlighter-rouge">plugins</code> 数组再次引用，即：</p><div class="language-ruby highlighter-rouge"><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+</pre><td class="rouge-code"><pre><span class="c1"># Gemfile</span>
+<span class="n">gem</span> <span class="s2">"plugin-x"</span>
+
+<span class="c1"># _config.yml</span>
+<span class="ss">plugins:
+  </span><span class="o">-</span> <span class="n">plugin</span><span class="o">-</span><span class="n">x</span>
+</pre></table></code></div></div></blockquote><p>笔者 Gemfile 全部配置如下：</p><div class="language-ruby highlighter-rouge"><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+</pre><td class="rouge-code"><pre><span class="n">source</span> <span class="s2">"https://rubygems.org"</span>
+
+<span class="n">group</span> <span class="ss">:jekyll_plugins</span> <span class="k">do</span>
+  <span class="n">gem</span> <span class="s2">"jekyll-paginate"</span>
+  <span class="n">gem</span> <span class="s2">"jekyll-feed"</span><span class="p">,</span> <span class="s2">"~&gt; 0.6"</span>
+  <span class="n">gem</span> <span class="s2">"jekyll-redirect-from"</span>
+  <span class="n">gem</span> <span class="s2">"jekyll-last-modified-at"</span> <span class="c1"># 3rd-party plugins</span>
+<span class="k">end</span>
+
+<span class="c1"># Windows does not include zoneinfo files, so bundle the tzinfo-data gem</span>
+<span class="n">gem</span> <span class="s1">'tzinfo-data'</span><span class="p">,</span> <span class="ss">platforms: </span><span class="p">[</span><span class="ss">:mingw</span><span class="p">,</span> <span class="ss">:mswin</span><span class="p">,</span> <span class="ss">:x64_mingw</span><span class="p">,</span> <span class="ss">:jruby</span><span class="p">]</span>
+</pre></table></code></div></div><h3 id="_configyml">_config.yml</h3><p>_config.yml 中若没有显式声明 <code class="language-plaintext highlighter-rouge">exclude</code>，以下文件列表会从默认构建中略过：</p><div class="language-yaml highlighter-rouge"><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+</pre><td class="rouge-code"><pre><span class="na">exclude</span><span class="pi">:</span>
+   <span class="pi">-</span> <span class="s">Gemfile</span>
+   <span class="pi">-</span> <span class="s">Gemfile.lock</span>
+   <span class="pi">-</span> <span class="s">node_modules</span>
+   <span class="pi">-</span> <span class="s">vendor/bundle/</span>
+   <span class="pi">-</span> <span class="s">vendor/cache/</span>
+   <span class="pi">-</span> <span class="s">vendor/gems/</span>
+   <span class="pi">-</span> <span class="s">vendor/ruby/</span>
+</pre></table></code></div></div><p>但是如果自定义了 <code class="language-plaintext highlighter-rouge">exclude</code> 覆盖默认列表，则确保要包含：</p><div class="language-yaml highlighter-rouge"><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+</pre><td class="rouge-code"><pre><span class="na">exclude</span><span class="pi">:</span> <span class="s">vendor</span>
+</pre></table></code></div></div><p>因为 Travis 容器默认构建命令为：</p><div class="language-console highlighter-rouge"><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+</pre><td class="rouge-code"><pre><span class="gp">$</span><span class="w"> </span>bundle <span class="nb">install</span> <span class="nt">--deployment</span> <span class="c"># some other args ...</span>
+</pre></table></code></div></div><p>其中 <code class="language-plaintext highlighter-rouge">--deployment</code> 参数会将 gems 包存放在当前路径的 <code class="language-plaintext highlighter-rouge">vendor</code> 目录之下。</p><p>另外，自定义的 <code class="language-plaintext highlighter-rouge">exclude</code> 列表，也应包含对站点无用的其他工程文件:</p><div class="language-yaml highlighter-rouge"><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+</pre><td class="rouge-code"><pre><span class="na">exclude</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="s">Gemfile</span>
+  <span class="pi">-</span> <span class="s">Gemfile.lock</span>
+  <span class="pi">-</span> <span class="s">README.md</span>
+</pre></table></code></div></div><h3 id="travisyml">.travis.yml</h3><p>项目根目录建一个文件，命名为 <code class="language-plaintext highlighter-rouge">.travis.yml</code>，有了它 Travis 才会自动对项目进行抓取编译等工作。笔者配置如下：</p><div class="language-yaml highlighter-rouge"><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+</pre><td class="rouge-code"><pre><span class="na">os</span><span class="pi">:</span> <span class="s">linux</span>
+<span class="na">dist</span><span class="pi">:</span> <span class="s">bionic</span>
+
+<span class="na">language</span><span class="pi">:</span> <span class="s">ruby</span>
+<span class="na">rvm</span><span class="pi">:</span> <span class="m">2.6</span>
+
+<span class="na">cache</span><span class="pi">:</span> <span class="s">Bundler</span>                  <span class="c1"># speed up the build by using bundler cache</span>
+
+<span class="na">before_install</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="s">pip install --upgrade pip</span>   <span class="c1"># Travis CI asked for it.</span>
+  <span class="pi">-</span> <span class="s">pip install ruamel.yaml</span>
+
+<span class="na">script</span><span class="pi">:</span> <span class="s">bash ./scripts/cibuild.sh</span>
+
+<span class="na">branches</span><span class="pi">:</span>
+  <span class="na">only</span><span class="pi">:</span> <span class="s">master</span>
+
+<span class="na">notifications</span><span class="pi">:</span>
+  <span class="na">email</span><span class="pi">:</span>
+    <span class="na">recipients</span><span class="pi">:</span>
+        <span class="pi">-</span> <span class="na">secure</span><span class="pi">:</span> <span class="s">ENCRYPT_EMAIL_ADDRESS_STRING</span>
+    <span class="na">on_success</span><span class="pi">:</span> <span class="s">never</span>
+
+<span class="na">env</span><span class="pi">:</span>
+  <span class="na">global</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="na">secure</span><span class="pi">:</span> <span class="s">ENCRYPT_KEY_VALUE_PAIRE</span>
+
+</pre></table></code></div></div><p>上述配置首先 <code class="language-plaintext highlighter-rouge">language</code> 和 <code class="language-plaintext highlighter-rouge">rvm</code> 描述了 Travis 虚拟机中的主语言环境。</p><p>接着执行流程是：<code class="language-plaintext highlighter-rouge">install</code> → <code class="language-plaintext highlighter-rouge">script</code>。</p><p><code class="language-plaintext highlighter-rouge">install</code> 部分安装了 Jekyll 环境和后面脚本需要的 Python 依赖。</p><p><code class="language-plaintext highlighter-rouge">script</code> 声明了 Travis 应该执行命令。</p><p>特别说明一下 <code class="language-plaintext highlighter-rouge">env.global</code> 的内容，里面是一个 Travis 客户端加密后的 GitHub Token 键值对。<code class="language-plaintext highlighter-rouge">cibuild.sh</code> 中的向 GitHub 推送代码需要用这个 token 来通过 GitHub 的权限认证。</p><h4 id="github-token">GitHub Token</h4><p>GitHub Token 申请可访问<a href="https://github.com/settings/tokens">设置页面</a>新建，<strong>Select scopes</strong> 部分选取 <code class="language-plaintext highlighter-rouge">repo</code> 的全部权限。</p><p><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-src="https://cdn.jsdelivr.net/gh/cotes2020/blog-images/1811080/0.jpg" alt="github-token-scopos" /></p><p>这个 token 十分重要，如果不想让人在自己仓库涂鸦，须谨慎保存。Travis Web 提供<a href="https://docs.travis-ci.com/user/environment-variables/#defining-variables-in-repository-settings">Envrionmen 变量的加密存储</a>，为了减少网上泄漏的风险，还是建议自己本地加密，再将加密串写入 <code class="language-plaintext highlighter-rouge">.travis.yml</code>。</p><p>本地安装 <a href="https://github.com/travis-ci/travis.rb#installation">Travis Client</a>，执行加密：</p><div class="language-console highlighter-rouge"><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+</pre><td class="rouge-code"><pre><span class="gp">$</span><span class="w"> </span><span class="nb">cd</span> /path/to/repository
+<span class="gp">$</span><span class="w"> </span>travis encrypt <span class="nv">GITHUB_TOKEN</span><span class="o">=</span>&lt;your-github-access-token&gt;
+</pre></table></code></div></div><blockquote><p><strong>注</strong>: 上述命令命令末端加 <code class="language-plaintext highlighter-rouge">--add</code> 指令，加密结果会自动添加到 <code class="language-plaintext highlighter-rouge">.travis.yml</code> 文件末尾的 <code class="language-plaintext highlighter-rouge">env.global</code>。</p></blockquote><p>将加密结果拷贝到 <code class="language-plaintext highlighter-rouge">.travis.yml</code> 的 <code class="language-plaintext highlighter-rouge">env.global</code> 下，用 <code class="language-plaintext highlighter-rouge">secure</code> 表明是一个加密字符串。笔者用这个方式还加密了build结果通知的邮件地址。</p><h4 id="coding-token可选">Coding Token（可选）</h4><p>如果想同时部署到 Coding Pages，则还要建立一个 Coding 的 Token，官方称作「访问牌令」，创建入口在 Coding 的<a href="https://dev.tencent.com/user/account">个人账户</a>即可找到：</p><p><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-src="https://cdn.jsdelivr.net/gh/cotes2020/blog-images/1811080/1.jpg" alt="Coding-Token" /></p><p>界面几乎是 GitHub 的中文版，<strong>选择权限</strong> 部分选取 <strong>project:depot</strong>。</p><h4 id="travis-加密">Travis 加密</h4><p>获得的 token 同样也是安全敏感数据，采用本地 Travis-Cli 加密，存入 <code class="language-plaintext highlighter-rouge">env.global</code> 即可：</p><div class="language-yaml highlighter-rouge"><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+</pre><td class="rouge-code"><pre><span class="na">env</span><span class="pi">:</span>
+  <span class="na">global</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="na">secure</span><span class="pi">:</span> <span class="s2">"</span><span class="s">yHH2GnrRs6aUmqu4t7dRV8L..."</span>  <span class="c1"># GitHub token</span>
+  <span class="pi">-</span> <span class="na">secure</span><span class="pi">:</span> <span class="s2">"</span><span class="s">RTg3SeugMzxrkzfLBU8zHpa..."</span>  <span class="c1"># Coding token</span>
+</pre></table></code></div></div><h3 id="cibuildsh">cibuild.sh</h3><p><code class="language-plaintext highlighter-rouge">script</code> 部分执行脚本 <code class="language-plaintext highlighter-rouge">cibuild.sh</code>，Travis 构建和部署的核心逻辑就定义在此。内容如下：</p><div class="language-bash highlighter-rouge"><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+</pre><td class="rouge-code"><pre><span class="c">#!/bin/bash</span>
+
+<span class="nv">GITHUB_DEPOLY</span><span class="o">=</span>https://<span class="k">${</span><span class="nv">GITHUB_TOKEN</span><span class="k">}</span>@github.com/cotes2020/cotes2020.github.io.git
+<span class="nv">CODING_DEPOLY</span><span class="o">=</span>https://cotes:<span class="k">${</span><span class="nv">CODING_TOKEN</span><span class="k">}</span>@git.dev.tencent.com/cotes/cotes.coding.me.git
+
+<span class="c"># skip if build is triggered by pull request</span>
+<span class="k">if</span> <span class="o">[</span> <span class="nv">$TRAVIS_PULL_REQUEST</span> <span class="o">!=</span> <span class="s2">"false"</span> <span class="o">]</span><span class="p">;</span> <span class="k">then
+  </span><span class="nb">echo</span> <span class="s2">"this is PR, exiting"</span>
+  <span class="nb">exit </span>0
+<span class="k">fi</span>
+
+<span class="c"># enable error reporting to the console</span>
+<span class="nb">set</span> <span class="nt">-e</span>
+
+<span class="k">if</span> <span class="o">[</span> <span class="nt">-d</span> <span class="s2">"_site"</span> <span class="o">]</span><span class="p">;</span> <span class="k">then
+  </span><span class="nb">rm</span> <span class="nt">-rf</span> _site
+<span class="k">fi</span>
+
+<span class="c">## Check lasmod of posts and the Category, Tag pages.</span>
+<span class="nb">export </span><span class="nv">TZ</span><span class="o">=</span><span class="s1">'Asia/Shanghai'</span> <span class="c"># the lastmod detection needs this</span>
+<span class="nb">echo</span> <span class="s2">"date: </span><span class="si">$(</span><span class="nb">date</span><span class="si">)</span><span class="s2">"</span>
+
+python ./scripts/pages_generator.py
+
+<span class="c"># build Jekyll ouput to directory ./_site</span>
+<span class="nv">JEKYLL_ENV</span><span class="o">=</span>production bundle <span class="nb">exec </span>jekyll build
+
+<span class="c">## Git settings</span>
+git config <span class="nt">--global</span> user.email <span class="s2">"travis@travis-ci.org"</span>
+git config <span class="nt">--global</span> user.name <span class="s2">"Travis-CI"</span>
+
+<span class="nv">DEPOLYS</span><span class="o">=(</span><span class="k">${</span><span class="nv">GITHUB_DEPOLY</span><span class="k">}</span> <span class="k">${</span><span class="nv">CODING_DEPOLY</span><span class="k">}</span><span class="o">)</span>
+
+<span class="k">for </span>i <span class="k">in</span> <span class="s2">"</span><span class="k">${</span><span class="p">!DEPOLYS[@]</span><span class="k">}</span><span class="s2">"</span>
+<span class="k">do
+  </span><span class="nb">echo</span> <span class="s2">"TRAVIS_BUILD_DIR=</span><span class="k">${</span><span class="nv">TRAVIS_BUILD_DIR</span><span class="k">}</span><span class="s2">"</span>
+  <span class="nb">cd</span> <span class="k">${</span><span class="nv">TRAVIS_BUILD_DIR</span><span class="k">}</span>
+
+  <span class="k">if</span> <span class="o">[</span> <span class="nt">-d</span> <span class="s2">"../repos_</span><span class="k">${</span><span class="nv">i</span><span class="k">}</span><span class="s2">"</span> <span class="o">]</span><span class="p">;</span> <span class="k">then
+    </span><span class="nb">rm</span> <span class="nt">-rf</span> ../repos_<span class="k">${</span><span class="nv">i</span><span class="k">}</span>
+  <span class="k">fi
+
+  </span>git clone <span class="nt">--depth</span><span class="o">=</span>1 <span class="k">${</span><span class="nv">DEPOLYS</span><span class="p">[</span><span class="k">${</span><span class="nv">i</span><span class="k">}</span><span class="p">]</span><span class="k">}</span> ../repos_<span class="k">${</span><span class="nv">i</span><span class="k">}</span>
+
+  <span class="nb">rm</span> <span class="nt">-rf</span> ../repos_<span class="k">${</span><span class="nv">i</span><span class="k">}</span>/<span class="k">*</span> <span class="o">&amp;&amp;</span> <span class="nb">cp</span> <span class="nt">-a</span> _site/<span class="k">*</span> ../repos_<span class="k">${</span><span class="nv">i</span><span class="k">}</span>/
+  <span class="nb">cd</span> ../repos_<span class="k">${</span><span class="nv">i</span><span class="k">}</span>/
+
+  git add <span class="nt">-A</span>
+  git commit <span class="nt">-m</span> <span class="s2">"Travis-CI automated deployment #</span><span class="k">${</span><span class="nv">TRAVIS_BUILD_NUMBER</span><span class="k">}</span><span class="s2">."</span>
+  git push <span class="k">${</span><span class="nv">DEPOLYS</span><span class="p">[</span><span class="k">${</span><span class="nv">i</span><span class="k">}</span><span class="p">]</span><span class="k">}</span> master:master
+
+  <span class="nb">echo</span> <span class="s2">"Push to </span><span class="k">${</span><span class="nv">DEPOLYS</span><span class="p">[</span><span class="k">${</span><span class="nv">i</span><span class="k">}</span><span class="p">]</span><span class="k">}</span><span class="s2">"</span>
+<span class="k">done</span>
+
+</pre></table></code></div></div><p>Bash 脚本执行了笔者用 Python 实现的 Category 和 Tag 页面生成工具，然后执行 Jekyll 构建。</p><p>要注意的一点是，构建需要声明 Jekyll 环境变量<code class="language-plaintext highlighter-rouge">JEKYLL_ENV=production</code>，因为它关系到<code class="language-plaintext highlighter-rouge">&lt;head&gt;</code>加载 Google Analytic 埋线的逻辑：</p><div class="language-liquid highlighter-rouge"><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+</pre><td class="rouge-code"><pre><span class="p">{%</span><span class="w"> </span><span class="kr">if</span><span class="w"> </span><span class="nv">jekyll</span><span class="p">.</span><span class="nv">environment</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s1">'production'</span><span class="w"> </span><span class="p">%}</span>
+  <span class="p">{%</span><span class="w"> </span><span class="nt">include</span><span class="w"> </span>google-analytics.html<span class="w"> </span><span class="p">%}</span>
+<span class="p">{%</span><span class="w"> </span><span class="kr">endif</span><span class="w"> </span><span class="p">%}</span>
+</pre></table></code></div></div><p>成功后把输出的静态文件部署到 <code class="language-plaintext highlighter-rouge">USER.github.io</code> 和 <code class="language-plaintext highlighter-rouge">USER.coding.me</code> 两个远程仓库。每次 commit message 用 Travis CI 自动生成的构建号 <code class="language-plaintext highlighter-rouge">${TRAVIS_BUILD_NUMBER}</code> 标识。</p><h2 id="travis-ci-官网配置">Travis CI 官网配置</h2><p><a href="https://travis-ci.org">Travis CI 官网</a>只需要用 GitHub 账号授权登陆就行了，<a href="https://travis-ci.org/account/repositories">仓库管理页面</a>开启选定的仓库，Travis CI 就会开始监听仓库。每次往仓库推送代码，都会触发自动构建、部署：</p><p><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-src="https://cdn.jsdelivr.net/gh/cotes2020/blog-images/1811080/2.jpg" alt="travis-builds" /></p><p>点击 <code class="language-plaintext highlighter-rouge">build|passing</code> 的徽章，还可以生成指定格式的状态图标链接，如 Markdown 格式：</p><p><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-src="https://cdn.jsdelivr.net/gh/cotes2020/blog-images/1811080/3.jpg" alt="travis-status-badge" /></p><p>生成地址拷贝到项目 README，可以方便的看到项目构建状态。Travis CI 的 Web 界面上有很多配置小细节，根据个人业务需求作个性化选择。</p><p>现在，整个接入工作完毕，从今以后，便可尽情地往源码仓库提交更新，Travis CI 会在背后矜矜业业的工作，构建错误会邮件通知，否则，就会自动部署最新的内容到 Pages 服务。一切悄无声息的进行，岂不美哉。</p><h2 id="ci-测试">CI 测试</h2><p>通常在编写 CI 自动化脚本时，免不了经历开发阶段的测试。本地没法模拟 Travis CI 线上虚拟服务的环境，只能把测试阶段的脚本提交到 Travis CI，这会产生过多无意义的 build 记录。Travis CI 只支持清空 build 内部的输出日志，却不能完全删除某个 build 记录，所以这显然是不太稳妥的选择。</p><p>其实可以用一个小技巧避开这种烦恼，首先在 GitHub 上创建工作仓库的一个副本，例如正在开发的项目为 <code class="language-plaintext highlighter-rouge">AwesomeProj</code>，那么可以先创建一个副本仓库，命名为 <code class="language-plaintext highlighter-rouge">AwesomProj-CI</code>，然后在这个项目上面集成 Travis CI 服务，集成期间可以尽意地推送到 Travis CI 上测试效果，直至脚本和配置成熟了，再拷贝到原始仓库 <code class="language-plaintext highlighter-rouge">AwesomeProj</code>，然后删除临时仓库 <code class="language-plaintext highlighter-rouge">AwesomProj-CI</code> 即可，Travis CI 服务器就会自动清掉临时项目的所有记录，而 <code class="language-plaintext highlighter-rouge">AwesomeProj</code> 项目在 Travis CI 上没有任何测试性的 build 记录，纯洁美观。</p><h2 id="片尾花絮">片尾花絮</h2><h3 id="修改-git-远程地址对-travis-加密的影响">修改 Git 远程地址对 Travis 加密的影响</h3><p>假设你在 Git 仓库调用过 Travis 本地加密命令 <code class="language-plaintext highlighter-rouge">travis encrypt</code>，那么仓库的 <code class="language-plaintext highlighter-rouge">.git/config</code> 就会被写入变量 <code class="language-plaintext highlighter-rouge">travis.slug</code>，内容是:</p><div class="language-plaintext highlighter-rouge"><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+</pre><td class="rouge-code"><pre>username/repository
+</pre></table></code></div></div><p><code class="language-plaintext highlighter-rouge">username</code> 为用户名，<code class="language-plaintext highlighter-rouge">repository</code> 为仓库名。</p><p>本地修改 Git 远程地址后，上述 <code class="language-plaintext highlighter-rouge">travis.slug</code> 的值是不会改变的。若此时再调用 Travis CLI 加密，Travis CI 服务端就不能正确解密。 正确的做法应该是：将 <code class="language-plaintext highlighter-rouge">username</code> 和 <code class="language-plaintext highlighter-rouge">repository</code> 更改成于新地址一致的内容，再执行 <code class="language-plaintext highlighter-rouge">travis encrypt</code>:</p><div class="language-console highlighter-rouge"><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+</pre><td class="rouge-code"><pre><span class="gp">$</span><span class="w"> </span>git config travis.slug new-username/new-repository
+</pre></table></code></div></div><h3 id="travis-的两个站点">Travis 的两个站点</h3><p>请注意 <strong>Travis CI 有两个官网</strong>：</p><ul><li><a href="https://travis-ci.org">https://travis-ci.org</a><li><a href="https://travis-ci.com">https://travis-ci.com</a></ul><p><code class="language-plaintext highlighter-rouge">org</code> 域名是对开源项目提供服务的，<code class="language-plaintext highlighter-rouge">com</code> 域名是对私有项目提供服务。</p><p>笔者之前用同一个 GitHub 账号在两个域名都关联了一次。结果悲催了：每次 git push，就会收到 Travis 两个不同 build number 的邮件通知，<code class="language-plaintext highlighter-rouge">org</code> 域名的 “passing”，<code class="language-plaintext highlighter-rouge">com</code> 域名的 “failling”，因为没发现域名的不同，这个乌龙问题困扰了笔者两三天，后来在 GitHub 取消对 <code class="language-plaintext highlighter-rouge">com</code> 域名授权就解决了。</p><h2 id="参考链接">参考链接</h2><ul><li><a href="https://jekyllrb.com/docs/continuous-integration/travis-ci/">Jekyll Docs: Travis CI</a><li><a href="https://docs.travis-ci.com/">Travis CI Docs</a><li><a href="https://pauldambra.github.io/using-travis-to-build-jekyll.html">Using Travis CI to build a Jekyll site</a></ul></div><div class="post-tail-wrapper text-muted"><div class="post-meta mb-3"> <i class="far fa-folder-open fa-fw mr-1"></i> <a href='/categories/tech/'>Tech</a>, <a href='/categories/website/'>Website</a></div><div class="post-tags"> <i class="fa fa-tags fa-fw mr-1"></i> <a href="/tags/travis-ci/" class="post-tag no-text-decoration" >travis ci</a> <a href="/tags/jekyll/" class="post-tag no-text-decoration" >jekyll</a></div><div class="post-tail-bottom d-flex justify-content-between align-items-center mt-3 pt-5 pb-2"><div class="license-wrapper"> This post is licensed under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a> by the author.</div><div class="share-wrapper"> <span class="share-label text-muted mr-1">Share</span> <span class="share-icons"> <a href="https://twitter.com/intent/tweet?text=Jekyll 集成 Travis CI - Cotes' Blog&url=https://blog.cotes.info/posts/integrate-travis-ci-in-jekyll/" data-toggle="tooltip" data-placement="top" title="Twitter" target="_blank" rel="noopener" aria-label="Twitter"> <i class="fa-fw fab fa-twitter"></i> </a> <a href="https://www.facebook.com/sharer/sharer.php?title=Jekyll 集成 Travis CI - Cotes' Blog&u=https://blog.cotes.info/posts/integrate-travis-ci-in-jekyll/" data-toggle="tooltip" data-placement="top" title="Facebook" target="_blank" rel="noopener" aria-label="Facebook"> <i class="fa-fw fab fa-facebook-square"></i> </a> <a href="https://telegram.me/share?text=Jekyll 集成 Travis CI - Cotes' Blog&url=https://blog.cotes.info/posts/integrate-travis-ci-in-jekyll/" data-toggle="tooltip" data-placement="top" title="Telegram" target="_blank" rel="noopener" aria-label="Telegram"> <i class="fa-fw fab fa-telegram"></i> </a> <i class="fa-fw fas fa-link small" onclick="copyLink()" data-toggle="tooltip" data-placement="top" title="Copy link"></i> </span></div></div></div></div></div><div id="panel-wrapper" class="col-xl-3 pl-2 text-muted topbar-down"><div class="access"><div id="access-lastmod" class="post"> <span>Recent Update</span><ul class="post-content pl-0 pb-1 ml-1 mt-2"><li><a href="/posts/shortcut-on-macos/">macOS 环境快捷键</a><li><a href="/posts/jekyll-site-performance-optimization/">Jekyll 网站性能优化</a><li><a href="/posts/replace-cn-mirror-for-homebrew/">Homebrew 替换国内源</a><li><a href="/posts/use-gnu-utilities-in-mac/">macOS 使用 GNU 命令</a><li><a href="/posts/turn-off-bluetooth-when-macbook-sleeps/">MacBook 合盖自动关闭蓝牙</a></ul></div><div id="access-tags"> <span>Trending Tags</span><div class="d-flex flex-wrap mt-3 mb-1 mr-3"> <a class="post-tag" href="/tags/jekyll/">jekyll</a> <a class="post-tag" href="/tags/macos/">macos</a> <a class="post-tag" href="/tags/homebrew/">homebrew</a> <a class="post-tag" href="/tags/nginx/">nginx</a> <a class="post-tag" href="/tags/shadowsocks/">shadowsocks</a> <a class="post-tag" href="/tags/story/">story</a> <a class="post-tag" href="/tags/age-of-empires/">age of empires</a> <a class="post-tag" href="/tags/dnspod/">dnspod</a> <a class="post-tag" href="/tags/github-pages/">github pages</a> <a class="post-tag" href="/tags/kc2/">kc2</a></div></div></div><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@1.0.1/dist/bootstrap-toc.min.js"></script><div id="toc-wrapper" class="pl-0 pr-4 mb-5"> <span class="pl-3 pt-2 mb-2">Contents</span><nav id="toc" data-toggle="toc"></nav></div></div></div><div class="row"><div class="col-12 col-lg-11 col-xl-8"><div id="post-extend-wrapper" class="pl-1 pr-1 pl-sm-2 pr-sm-2 pl-md-4 pr-md-4"><div id="related-posts" class="mt-5 mb-2 mb-sm-4"><h3 class="pt-2 mt-1 mb-4 ml-1" data-toc-skip>Further Reading</h3><div class="card-deck mb-4"><div class="card"> <a href="/posts/split-posts-n-metadata-of-blog/"><div class="card-body"> <span class="timeago small" > Jan 14, 2019 <i class="unloaded">2019-01-14T22:01:00+08:00</i> </span><h3 class="pt-0 mt-1 mb-3" data-toc-skip>博客架构分拆</h3><div class="text-muted small"><p> 令人瑟瑟发抖的寒冬中，时间迈入了 2019 年。一片萧条的大环境下，人们注定要为今后的生活付出更多艰辛与努力。微软，大洋彼岸的 IT 巨头，似乎觉察到这点，于是大手一挥送温暖：于今年 1 月 8 日宣告 GitHub 对个人开发者免费提供私密仓库服务，数量无限制。要知道，此前私密仓库是要每月耗费 7 刀巨资啊。 收到这份新禧礼物后，我激动地把分散到各处小作坊平台的仓库统一迁移到 GitHu...</p></div></div></a></div><div class="card"> <a href="/posts/jekyll-categroies-design/"><div class="card-body"> <span class="timeago small" > Feb 25, 2018 <i class="unloaded">2018-02-25T16:29:00+08:00</i> </span><h3 class="pt-0 mt-1 mb-3" data-toc-skip>Jekyll 的 Categories 设计</h3><div class="text-muted small"><p> 当博客开发进行到 Category 部分时，很多头疼的问题接踵而来： 类目如何分层，分多少层？ 顶级分类能不能允许文章与子分类同存？ 如何实现方便快捷的交互 UI？ 思考的过程中仔细参阅了 Jekyll Docs，还有 Google 上一些关于 WordPress 的分类规则文章，以及 Evernote 的产品设计，最后做出以下设计。 设计目标 出于归类精简的初...</p></div></div></a></div><div class="card"> <a href="/posts/jekyll-code-snippet/"><div class="card-body"> <span class="timeago small" > Feb 26, 2018 <i class="unloaded">2018-02-26T21:18:00+08:00</i> </span><h3 class="pt-0 mt-1 mb-3" data-toc-skip>Jekyll 代码块展示</h3><div class="text-muted small"><p> 展示代码高亮是每个技术博客与生俱来的使命，而展示行号，也是一个不可或缺的需求。对 Jekyll 用户的好消息是，官方对此提供了友好的支持。 语法高亮 常规的 Markdown 语法：使用 ``` 或者 ~~~ 符号可以展示语法高亮代码块。另外，也可以使用 Jekyll 的 highlight tag，例如，展示一段 HTML 代码： {% highlight html %} &lt;p...</p></div></div></a></div></div></div><div class="post-navigation d-flex justify-content-between"> <a href="/posts/the-seo-to-jekyll/" class="btn btn-outline-primary" prompt="Older"><p>Jekyll 的 SEO 优化</p></a> <a href="/posts/split-posts-n-metadata-of-blog/" class="btn btn-outline-primary" prompt="Newer"><p>博客架构分拆</p></a></div><div id="disqus" class="pt-2 pb-2"><p class="text-center text-muted small pb-5"> Comments powered by <a href="https://disqus.com/">Disqus</a>.</p></div><script src="/assets/js/lib/jquery.disqusloader.min.js"></script> <script> const options = { scriptUrl: '//cotess-blog.disqus.com/embed.js', disqusConfig: function() { this.page.title = 'Jekyll 集成 Travis CI'; this.page.url = 'https://blog.cotes.info/posts/integrate-travis-ci-in-jekyll/'; this.page.identifier = '/posts/integrate-travis-ci-in-jekyll/'; } }; $.disqusLoader('#disqus', options); </script></div></div></div><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/lozad/dist/lozad.min.js"></script> <script type="text/javascript"> const imgs = document.querySelectorAll('.post-content img'); const observer = lozad(imgs); observer.observe(); </script><footer class="d-flex w-100 justify-content-center"><div class="d-flex justify-content-between align-items-center"><div class="footer-left"><p class="mb-0"> © 2018 - 2021 <a href="https://blog.cotes.info/">Cotes Chung</a>. <span data-toggle="tooltip" data-placement="top" title="Except where otherwise noted, the blog posts on this site are licensed under the Creative Commons Attribution 4.0 International (CC BY 4.0) License by the author."> Some rights reserved. </span></p></div><div class="footer-right"><p class="mb-0"> Powered by <a href="https://jekyllrb.com" target="_blank" rel="noopener">Jekyll</a> with <a href="https://github.com/cotes2020/jekyll-theme-chirpy" target="_blank" rel="noopener">Chirpy</a> theme.</p></div></div></footer></div><div id="search-result-wrapper" class="d-flex justify-content-center unloaded"><div class="col-12 col-sm-11 post-content"><div id="search-hints"><h4 class="text-muted mb-4">Trending Tags</h4><a class="post-tag" href="/tags/jekyll/">jekyll</a> <a class="post-tag" href="/tags/macos/">macos</a> <a class="post-tag" href="/tags/homebrew/">homebrew</a> <a class="post-tag" href="/tags/nginx/">nginx</a> <a class="post-tag" href="/tags/shadowsocks/">shadowsocks</a> <a class="post-tag" href="/tags/story/">story</a> <a class="post-tag" href="/tags/age-of-empires/">age of empires</a> <a class="post-tag" href="/tags/dnspod/">dnspod</a> <a class="post-tag" href="/tags/github-pages/">github pages</a> <a class="post-tag" href="/tags/kc2/">kc2</a></div><div id="search-results" class="d-flex flex-wrap justify-content-center text-muted mt-3"></div></div></div></div><div id="mask"></div><a id="back-to-top" href="#" aria-label="back-to-top" class="btn btn-lg btn-box-shadow" role="button"> <i class="fas fa-angle-up"></i> </a> <script src="https://cdn.jsdelivr.net/npm/simple-jekyll-search@1.7.3/dest/simple-jekyll-search.min.js"></script> <script> SimpleJekyllSearch({ searchInput: document.getElementById('search-input'), resultsContainer: document.getElementById('search-results'), json: '/assets/js/data/search.json', searchResultTemplate: '<div class="pl-1 pr-1 pl-sm-2 pr-sm-2 pl-lg-4 pr-lg-4 pl-xl-0 pr-xl-0"> <a href="https://blog.cotes.info{url}">{title}</a><div class="post-meta d-flex flex-column flex-sm-row text-muted mt-1 mb-1"> {categories} {tags}</div><p>{snippet}</p></div>', noResultsText: '<p class="mt-5">Oops! No result founds.</p>', templateMiddleware: function(prop, value, template) { if (prop === 'categories') { if (value === '') { return `${value}`; } else { return `<div class="mr-sm-4"><i class="far fa-folder fa-fw"></i>${value}</div>`; } } if (prop === 'tags') { if (value === '') { return `${value}`; } else { return `<div><i class="fa fa-tag fa-fw"></i>${value}</div>`; } } } }); </script>
